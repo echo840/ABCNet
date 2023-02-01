@@ -1,0 +1,1639 @@
+2023/01/31 21:43:46 - mmengine - INFO - 
+------------------------------------------------------------
+System environment:
+    sys.platform: linux
+    Python: 3.10.9 (main, Jan 11 2023, 15:21:40) [GCC 11.2.0]
+    CUDA available: True
+    numpy_random_seed: 701305069
+    GPU 0,1: NVIDIA RTX A6000
+    CUDA_HOME: /usr/local/cuda-11.3
+    NVCC: Cuda compilation tools, release 11.3, V11.3.58
+    GCC: gcc (Ubuntu 7.5.0-3ubuntu1~18.04) 7.5.0
+    PyTorch: 1.12.0
+    PyTorch compiling details: PyTorch built with:
+  - GCC 9.3
+  - C++ Version: 201402
+  - Intel(R) oneAPI Math Kernel Library Version 2021.4-Product Build 20210904 for Intel(R) 64 architecture applications
+  - Intel(R) MKL-DNN v2.6.0 (Git Hash 52b5f107dd9cf10910aaa19cb47f3abf9b349815)
+  - OpenMP 201511 (a.k.a. OpenMP 4.5)
+  - LAPACK is enabled (usually provided by MKL)
+  - NNPACK is enabled
+  - CPU capability usage: AVX2
+  - CUDA Runtime 11.3
+  - NVCC architecture flags: -gencode;arch=compute_37,code=sm_37;-gencode;arch=compute_50,code=sm_50;-gencode;arch=compute_60,code=sm_60;-gencode;arch=compute_61,code=sm_61;-gencode;arch=compute_70,code=sm_70;-gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_80,code=sm_80;-gencode;arch=compute_86,code=sm_86;-gencode;arch=compute_37,code=compute_37
+  - CuDNN 8.3.2  (built against CUDA 11.5)
+  - Magma 2.5.2
+  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, CUDA_VERSION=11.3, CUDNN_VERSION=8.3.2, CXX_COMPILER=/opt/rh/devtoolset-9/root/usr/bin/c++, CXX_FLAGS= -Wno-deprecated -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -fopenmp -DNDEBUG -DUSE_KINETO -DUSE_FBGEMM -DUSE_QNNPACK -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -DSYMBOLICATE_MOBILE_DEBUG_HANDLE -DEDGE_PROFILER_USE_KINETO -O2 -fPIC -Wno-narrowing -Wall -Wextra -Werror=return-type -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wno-unused-parameter -Wno-unused-function -Wno-unused-result -Wno-unused-local-typedefs -Wno-strict-overflow -Wno-strict-aliasing -Wno-error=deprecated-declarations -Wno-stringop-overflow -Wno-psabi -Wno-error=pedantic -Wno-error=redundant-decls -Wno-error=old-style-cast -fdiagnostics-color=always -faligned-new -Wno-unused-but-set-variable -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Werror=cast-function-type -Wno-stringop-overflow, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, PERF_WITH_AVX512=1, TORCH_VERSION=1.12.0, USE_CUDA=ON, USE_CUDNN=ON, USE_EXCEPTION_PTR=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_MKL=ON, USE_MKLDNN=OFF, USE_MPI=OFF, USE_NCCL=ON, USE_NNPACK=ON, USE_OPENMP=ON, USE_ROCM=OFF, 
+
+    TorchVision: 0.13.0
+    OpenCV: 4.7.0
+    MMEngine: 0.5.0
+
+Runtime environment:
+    cudnn_benchmark: True
+    mp_cfg: {'mp_start_method': 'fork', 'opencv_num_threads': 0}
+    dist_cfg: {'backend': 'nccl'}
+    seed: None
+    Distributed launcher: pytorch
+    Distributed training: True
+    GPU number: 1
+------------------------------------------------------------
+
+2023/01/31 21:43:46 - mmengine - INFO - Config:
+file_client_args = dict(backend='disk')
+num_classes = 1
+strides = [8, 16, 32, 64, 128]
+bbox_coder = dict(type='mmdet.DistancePointBBoxCoder')
+with_bezier = True
+norm_on_bbox = True
+use_sigmoid_cls = True
+dictionary = dict(
+    type='Dictionary',
+    dict_file=
+    '/home/user/lz/ABCNet/mmocr/projects/ABCNet/config/abcnet_v2/../../dicts/abcnet.txt',
+    with_start=False,
+    with_end=False,
+    same_start_end=False,
+    with_padding=True,
+    with_unknown=True)
+model = dict(
+    type='ABCNet',
+    data_preprocessor=dict(
+        type='TextDetDataPreprocessor',
+        mean=[103.53, 116.28, 123.675],
+        std=[1, 1, 1],
+        bgr_to_rgb=False,
+        pad_size_divisor=32),
+    backbone=dict(
+        type='mmdet.ResNet',
+        depth=50,
+        num_stages=4,
+        out_indices=(0, 1, 2, 3),
+        frozen_stages=1,
+        norm_cfg=dict(type='BN', requires_grad=False),
+        norm_eval=True,
+        style='caffe',
+        init_cfg=dict(
+            type='Pretrained',
+            checkpoint='open-mmlab://detectron2/resnet50_caffe')),
+    neck=dict(
+        type='BiFPN',
+        in_channels=[256, 512, 1024, 2048],
+        out_channels=256,
+        start_level=0,
+        add_extra_convs=True,
+        norm_cfg=dict(type='BN'),
+        num_outs=6,
+        relu_before_extra_convs=True),
+    det_head=dict(
+        type='ABCNetDetHead',
+        num_classes=1,
+        in_channels=256,
+        stacked_convs=4,
+        feat_channels=256,
+        strides=[8, 16, 32, 64, 128],
+        norm_on_bbox=True,
+        use_sigmoid_cls=True,
+        centerness_on_reg=True,
+        dcn_on_last_conv=False,
+        conv_bias=True,
+        use_scale=False,
+        with_bezier=True,
+        init_cfg=dict(
+            type='Normal',
+            layer='Conv2d',
+            std=0.01,
+            override=dict(
+                type='Normal',
+                name='conv_cls',
+                std=0.01,
+                bias=-4.59511985013459)),
+        module_loss=dict(
+            type='ABCNetDetModuleLoss',
+            num_classes=1,
+            strides=[8, 16, 32, 64, 128],
+            center_sampling=True,
+            center_sample_radius=1.5,
+            bbox_coder=dict(type='mmdet.DistancePointBBoxCoder'),
+            norm_on_bbox=True,
+            loss_cls=dict(
+                type='mmdet.FocalLoss',
+                use_sigmoid=True,
+                gamma=2.0,
+                alpha=0.25,
+                loss_weight=1.0),
+            loss_bbox=dict(type='mmdet.GIoULoss', loss_weight=1.0),
+            loss_centerness=dict(
+                type='mmdet.CrossEntropyLoss',
+                use_sigmoid=True,
+                loss_weight=1.0)),
+        postprocessor=dict(
+            type='ABCNetDetPostprocessor',
+            use_sigmoid_cls=True,
+            strides=[8, 16, 32, 64, 128],
+            bbox_coder=dict(type='mmdet.DistancePointBBoxCoder'),
+            with_bezier=True,
+            test_cfg=dict(
+                nms_pre=1000,
+                nms=dict(type='nms', iou_threshold=0.4),
+                score_thr=0.3))),
+    roi_head=dict(
+        type='RecRoIHead',
+        neck=dict(type='CoordinateHead'),
+        roi_extractor=dict(
+            type='BezierRoIExtractor',
+            roi_layer=dict(
+                type='BezierAlign', output_size=(16, 64), sampling_ratio=1.0),
+            out_channels=256,
+            featmap_strides=[4, 8, 16]),
+        rec_head=dict(
+            type='ABCNetRec',
+            backbone=dict(type='ABCNetRecBackbone'),
+            encoder=dict(type='ABCNetRecEncoder'),
+            decoder=dict(
+                type='ABCNetRecDecoder',
+                dictionary=dict(
+                    type='Dictionary',
+                    dict_file=
+                    '/home/user/lz/ABCNet/mmocr/projects/ABCNet/config/abcnet_v2/../../dicts/abcnet.txt',
+                    with_start=False,
+                    with_end=False,
+                    same_start_end=False,
+                    with_padding=True,
+                    with_unknown=True),
+                postprocessor=dict(
+                    type='AttentionPostprocessor',
+                    ignore_chars=['padding', 'unknown']),
+                module_loss=dict(
+                    type='CEModuleLoss',
+                    ignore_first_char=False,
+                    ignore_char=-1,
+                    reduction='mean'),
+                max_seq_len=25))),
+    postprocessor=dict(
+        type='ABCNetPostprocessor',
+        rescale_fields=['polygons', 'bboxes', 'beziers']))
+test_pipeline = [
+    dict(
+        type='LoadImageFromFile',
+        file_client_args=dict(backend='disk'),
+        color_type='color_ignore_orientation'),
+    dict(type='Resize', scale=(2000, 4000), keep_ratio=True, backend='pillow'),
+    dict(
+        type='LoadOCRAnnotations',
+        with_polygon=True,
+        with_bbox=True,
+        with_label=True,
+        with_text=True),
+    dict(
+        type='PackTextDetInputs',
+        meta_keys=('img_path', 'ori_shape', 'img_shape', 'scale_factor'))
+]
+train_pipeline = [
+    dict(
+        type='LoadImageFromFile',
+        file_client_args=dict(backend='disk'),
+        color_type='color_ignore_orientation'),
+    dict(type='Resize', scale=(2000, 4000), keep_ratio=True, backend='pillow'),
+    dict(
+        type='LoadOCRAnnotations',
+        with_polygon=True,
+        with_bbox=True,
+        with_label=True,
+        with_text=True),
+    dict(
+        type='PackTextDetInputs',
+        meta_keys=('img_path', 'ori_shape', 'img_shape', 'scale_factor'))
+]
+icdar2015_textspotting_data_root = 'data/icdar2015'
+icdar2015_textspotting_train = dict(
+    type='OCRDataset',
+    data_root='data/icdar2015',
+    ann_file='textspotting_train.json',
+    pipeline=[
+        dict(
+            type='LoadImageFromFile',
+            file_client_args=dict(backend='disk'),
+            color_type='color_ignore_orientation'),
+        dict(
+            type='Resize',
+            scale=(2000, 4000),
+            keep_ratio=True,
+            backend='pillow'),
+        dict(
+            type='LoadOCRAnnotations',
+            with_polygon=True,
+            with_bbox=True,
+            with_label=True,
+            with_text=True),
+        dict(
+            type='PackTextDetInputs',
+            meta_keys=('img_path', 'ori_shape', 'img_shape', 'scale_factor'))
+    ])
+icdar2015_textspotting_test = dict(
+    type='OCRDataset',
+    data_root='data/icdar2015',
+    ann_file='textspotting_test.json',
+    test_mode=True,
+    pipeline=[
+        dict(
+            type='LoadImageFromFile',
+            file_client_args=dict(backend='disk'),
+            color_type='color_ignore_orientation'),
+        dict(
+            type='Resize',
+            scale=(2000, 4000),
+            keep_ratio=True,
+            backend='pillow'),
+        dict(
+            type='LoadOCRAnnotations',
+            with_polygon=True,
+            with_bbox=True,
+            with_label=True,
+            with_text=True),
+        dict(
+            type='PackTextDetInputs',
+            meta_keys=('img_path', 'ori_shape', 'img_shape', 'scale_factor'))
+    ])
+default_scope = 'mmocr'
+env_cfg = dict(
+    cudnn_benchmark=True,
+    mp_cfg=dict(mp_start_method='fork', opencv_num_threads=0),
+    dist_cfg=dict(backend='nccl'))
+randomness = dict(seed=None)
+default_hooks = dict(
+    timer=dict(type='IterTimerHook'),
+    logger=dict(type='LoggerHook', interval=5),
+    param_scheduler=dict(type='ParamSchedulerHook'),
+    checkpoint=dict(type='CheckpointHook', interval=20),
+    sampler_seed=dict(type='DistSamplerSeedHook'),
+    sync_buffer=dict(type='SyncBuffersHook'),
+    visualization=dict(
+        type='VisualizationHook',
+        interval=1,
+        enable=False,
+        show=False,
+        draw_gt=False,
+        draw_pred=False))
+log_level = 'INFO'
+log_processor = dict(type='LogProcessor', window_size=10, by_epoch=True)
+load_from = '/home/user/lz/ABCNet/mmocr/projects/ABCNet/model/abcnet-v2_resnet50_bifpn_500e_icdar2015-5e4cc7ed.pth'
+resume = False
+val_evaluator = [dict(type='E2EHmeanIOUMetric'), dict(type='HmeanIOUMetric')]
+test_evaluator = [dict(type='E2EHmeanIOUMetric'), dict(type='HmeanIOUMetric')]
+vis_backends = [dict(type='LocalVisBackend')]
+visualizer = dict(
+    type='TextSpottingLocalVisualizer',
+    name='visualizer',
+    vis_backends=[dict(type='LocalVisBackend')])
+optim_wrapper = dict(
+    type='OptimWrapper',
+    optimizer=dict(type='SGD', lr=0.001, momentum=0.9, weight_decay=0.0001),
+    clip_grad=dict(type='value', clip_value=1))
+train_cfg = dict(
+    type='EpochBasedTrainLoop', max_epochs=500, val_interval=1, val_begin=0)
+val_cfg = dict(type='ValLoop')
+test_cfg = dict(type='TestLoop')
+param_scheduler = [
+    dict(type='LinearLR', end=1000, start_factor=0.001, by_epoch=False)
+]
+train_dataloader = dict(
+    batch_size=1,
+    num_workers=8,
+    persistent_workers=True,
+    sampler=dict(type='DefaultSampler', shuffle=True),
+    dataset=dict(
+        type='OCRDataset',
+        data_root='data/icdar2015',
+        ann_file='textspotting_train.json',
+        pipeline=[
+            dict(
+                type='LoadImageFromFile',
+                file_client_args=dict(backend='disk'),
+                color_type='color_ignore_orientation'),
+            dict(
+                type='Resize',
+                scale=(2000, 4000),
+                keep_ratio=True,
+                backend='pillow'),
+            dict(
+                type='LoadOCRAnnotations',
+                with_polygon=True,
+                with_bbox=True,
+                with_label=True,
+                with_text=True),
+            dict(
+                type='PackTextDetInputs',
+                meta_keys=('img_path', 'ori_shape', 'img_shape',
+                           'scale_factor'))
+        ]))
+val_dataloader = dict(
+    batch_size=1,
+    num_workers=4,
+    persistent_workers=True,
+    sampler=dict(type='DefaultSampler', shuffle=False),
+    dataset=dict(
+        type='OCRDataset',
+        data_root='data/icdar2015',
+        ann_file='textspotting_test.json',
+        test_mode=True,
+        pipeline=[
+            dict(
+                type='LoadImageFromFile',
+                file_client_args=dict(backend='disk'),
+                color_type='color_ignore_orientation'),
+            dict(
+                type='Resize',
+                scale=(2000, 4000),
+                keep_ratio=True,
+                backend='pillow'),
+            dict(
+                type='LoadOCRAnnotations',
+                with_polygon=True,
+                with_bbox=True,
+                with_label=True,
+                with_text=True),
+            dict(
+                type='PackTextDetInputs',
+                meta_keys=('img_path', 'ori_shape', 'img_shape',
+                           'scale_factor'))
+        ]))
+test_dataloader = dict(
+    batch_size=1,
+    num_workers=4,
+    persistent_workers=True,
+    sampler=dict(type='DefaultSampler', shuffle=False),
+    dataset=dict(
+        type='OCRDataset',
+        data_root='data/icdar2015',
+        ann_file='textspotting_test.json',
+        test_mode=True,
+        pipeline=[
+            dict(
+                type='LoadImageFromFile',
+                file_client_args=dict(backend='disk'),
+                color_type='color_ignore_orientation'),
+            dict(
+                type='Resize',
+                scale=(2000, 4000),
+                keep_ratio=True,
+                backend='pillow'),
+            dict(
+                type='LoadOCRAnnotations',
+                with_polygon=True,
+                with_bbox=True,
+                with_label=True,
+                with_text=True),
+            dict(
+                type='PackTextDetInputs',
+                meta_keys=('img_path', 'ori_shape', 'img_shape',
+                           'scale_factor'))
+        ]))
+custom_imports = dict(imports=['abcnet'], allow_failed_imports=False)
+find_unused_parameters = True
+launcher = 'pytorch'
+work_dir = 'work_dirs/'
+
+2023/01/31 21:43:46 - mmengine - WARNING - The "visualizer" registry in mmocr did not set import location. Fallback to call `mmocr.utils.register_all_modules` instead.
+2023/01/31 21:43:46 - mmengine - WARNING - The "vis_backend" registry in mmocr did not set import location. Fallback to call `mmocr.utils.register_all_modules` instead.
+2023/01/31 21:43:47 - mmengine - WARNING - The "model" registry in mmocr did not set import location. Fallback to call `mmocr.utils.register_all_modules` instead.
+2023/01/31 21:43:47 - mmengine - WARNING - The "model" registry in mmdet did not set import location. Fallback to call `mmdet.utils.register_all_modules` instead.
+2023/01/31 21:43:47 - mmengine - WARNING - The "task util" registry in mmocr did not set import location. Fallback to call `mmocr.utils.register_all_modules` instead.
+2023/01/31 21:43:47 - mmengine - WARNING - The "task util" registry in mmdet did not set import location. Fallback to call `mmdet.utils.register_all_modules` instead.
+2023/01/31 21:43:49 - mmengine - WARNING - The "hook" registry in mmocr did not set import location. Fallback to call `mmocr.utils.register_all_modules` instead.
+2023/01/31 21:43:49 - mmengine - INFO - Hooks will be executed in the following order:
+before_run:
+(VERY_HIGH   ) RuntimeInfoHook                    
+(BELOW_NORMAL) LoggerHook                         
+ -------------------- 
+before_train:
+(VERY_HIGH   ) RuntimeInfoHook                    
+(NORMAL      ) IterTimerHook                      
+(VERY_LOW    ) CheckpointHook                     
+ -------------------- 
+before_train_epoch:
+(VERY_HIGH   ) RuntimeInfoHook                    
+(NORMAL      ) IterTimerHook                      
+(NORMAL      ) DistSamplerSeedHook                
+ -------------------- 
+before_train_iter:
+(VERY_HIGH   ) RuntimeInfoHook                    
+(NORMAL      ) IterTimerHook                      
+ -------------------- 
+after_train_iter:
+(VERY_HIGH   ) RuntimeInfoHook                    
+(NORMAL      ) IterTimerHook                      
+(BELOW_NORMAL) LoggerHook                         
+(LOW         ) ParamSchedulerHook                 
+(VERY_LOW    ) CheckpointHook                     
+ -------------------- 
+after_train_epoch:
+(NORMAL      ) IterTimerHook                      
+(NORMAL      ) SyncBuffersHook                    
+(LOW         ) ParamSchedulerHook                 
+(VERY_LOW    ) CheckpointHook                     
+ -------------------- 
+before_val_epoch:
+(NORMAL      ) IterTimerHook                      
+ -------------------- 
+before_val_iter:
+(NORMAL      ) IterTimerHook                      
+ -------------------- 
+after_val_iter:
+(NORMAL      ) IterTimerHook                      
+(NORMAL      ) VisualizationHook                  
+(BELOW_NORMAL) LoggerHook                         
+ -------------------- 
+after_val_epoch:
+(VERY_HIGH   ) RuntimeInfoHook                    
+(NORMAL      ) IterTimerHook                      
+(BELOW_NORMAL) LoggerHook                         
+(LOW         ) ParamSchedulerHook                 
+(VERY_LOW    ) CheckpointHook                     
+ -------------------- 
+before_test_epoch:
+(NORMAL      ) IterTimerHook                      
+ -------------------- 
+before_test_iter:
+(NORMAL      ) IterTimerHook                      
+ -------------------- 
+after_test_iter:
+(NORMAL      ) IterTimerHook                      
+(NORMAL      ) VisualizationHook                  
+(BELOW_NORMAL) LoggerHook                         
+ -------------------- 
+after_test_epoch:
+(VERY_HIGH   ) RuntimeInfoHook                    
+(NORMAL      ) IterTimerHook                      
+(BELOW_NORMAL) LoggerHook                         
+ -------------------- 
+after_run:
+(BELOW_NORMAL) LoggerHook                         
+ -------------------- 
+2023/01/31 21:43:49 - mmengine - WARNING - The "loop" registry in mmocr did not set import location. Fallback to call `mmocr.utils.register_all_modules` instead.
+2023/01/31 21:43:49 - mmengine - WARNING - The "dataset" registry in mmocr did not set import location. Fallback to call `mmocr.utils.register_all_modules` instead.
+2023/01/31 21:43:49 - mmengine - WARNING - The "transform" registry in mmocr did not set import location. Fallback to call `mmocr.utils.register_all_modules` instead.
+2023/01/31 21:43:49 - mmengine - WARNING - The "data sampler" registry in mmocr did not set import location. Fallback to call `mmocr.utils.register_all_modules` instead.
+2023/01/31 21:43:49 - mmengine - WARNING - The "optimizer constructor" registry in mmocr did not set import location. Fallback to call `mmocr.utils.register_all_modules` instead.
+2023/01/31 21:43:49 - mmengine - WARNING - The "optimizer" registry in mmocr did not set import location. Fallback to call `mmocr.utils.register_all_modules` instead.
+2023/01/31 21:43:49 - mmengine - WARNING - The "optim wrapper" registry in mmocr did not set import location. Fallback to call `mmocr.utils.register_all_modules` instead.
+2023/01/31 21:43:49 - mmengine - WARNING - The "parameter scheduler" registry in mmocr did not set import location. Fallback to call `mmocr.utils.register_all_modules` instead.
+2023/01/31 21:43:49 - mmengine - WARNING - The "metric" registry in mmocr did not set import location. Fallback to call `mmocr.utils.register_all_modules` instead.
+2023/01/31 21:43:50 - mmengine - WARNING - The "weight initializer" registry in mmocr did not set import location. Fallback to call `mmocr.utils.register_all_modules` instead.
+2023/01/31 21:43:50 - mmengine - INFO - load model from: open-mmlab://detectron2/resnet50_caffe
+2023/01/31 21:43:50 - mmengine - INFO - Loads checkpoint by openmmlab backend from path: open-mmlab://detectron2/resnet50_caffe
+2023/01/31 21:43:50 - mmengine - WARNING - The model and loaded state dict do not match exactly
+
+unexpected key in source state_dict: conv1.bias
+
+Name of parameter - Initialization information
+
+backbone.conv1.weight - torch.Size([64, 3, 7, 7]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.bn1.weight - torch.Size([64]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.bn1.bias - torch.Size([64]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer1.0.conv1.weight - torch.Size([64, 64, 1, 1]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer1.0.bn1.weight - torch.Size([64]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer1.0.bn1.bias - torch.Size([64]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer1.0.conv2.weight - torch.Size([64, 64, 3, 3]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer1.0.bn2.weight - torch.Size([64]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer1.0.bn2.bias - torch.Size([64]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer1.0.conv3.weight - torch.Size([256, 64, 1, 1]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer1.0.bn3.weight - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer1.0.bn3.bias - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer1.0.downsample.0.weight - torch.Size([256, 64, 1, 1]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer1.0.downsample.1.weight - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer1.0.downsample.1.bias - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer1.1.conv1.weight - torch.Size([64, 256, 1, 1]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer1.1.bn1.weight - torch.Size([64]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer1.1.bn1.bias - torch.Size([64]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer1.1.conv2.weight - torch.Size([64, 64, 3, 3]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer1.1.bn2.weight - torch.Size([64]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer1.1.bn2.bias - torch.Size([64]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer1.1.conv3.weight - torch.Size([256, 64, 1, 1]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer1.1.bn3.weight - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer1.1.bn3.bias - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer1.2.conv1.weight - torch.Size([64, 256, 1, 1]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer1.2.bn1.weight - torch.Size([64]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer1.2.bn1.bias - torch.Size([64]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer1.2.conv2.weight - torch.Size([64, 64, 3, 3]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer1.2.bn2.weight - torch.Size([64]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer1.2.bn2.bias - torch.Size([64]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer1.2.conv3.weight - torch.Size([256, 64, 1, 1]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer1.2.bn3.weight - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer1.2.bn3.bias - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer2.0.conv1.weight - torch.Size([128, 256, 1, 1]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer2.0.bn1.weight - torch.Size([128]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer2.0.bn1.bias - torch.Size([128]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer2.0.conv2.weight - torch.Size([128, 128, 3, 3]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer2.0.bn2.weight - torch.Size([128]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer2.0.bn2.bias - torch.Size([128]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer2.0.conv3.weight - torch.Size([512, 128, 1, 1]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer2.0.bn3.weight - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer2.0.bn3.bias - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer2.0.downsample.0.weight - torch.Size([512, 256, 1, 1]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer2.0.downsample.1.weight - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer2.0.downsample.1.bias - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer2.1.conv1.weight - torch.Size([128, 512, 1, 1]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer2.1.bn1.weight - torch.Size([128]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer2.1.bn1.bias - torch.Size([128]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer2.1.conv2.weight - torch.Size([128, 128, 3, 3]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer2.1.bn2.weight - torch.Size([128]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer2.1.bn2.bias - torch.Size([128]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer2.1.conv3.weight - torch.Size([512, 128, 1, 1]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer2.1.bn3.weight - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer2.1.bn3.bias - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer2.2.conv1.weight - torch.Size([128, 512, 1, 1]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer2.2.bn1.weight - torch.Size([128]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer2.2.bn1.bias - torch.Size([128]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer2.2.conv2.weight - torch.Size([128, 128, 3, 3]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer2.2.bn2.weight - torch.Size([128]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer2.2.bn2.bias - torch.Size([128]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer2.2.conv3.weight - torch.Size([512, 128, 1, 1]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer2.2.bn3.weight - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer2.2.bn3.bias - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer2.3.conv1.weight - torch.Size([128, 512, 1, 1]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer2.3.bn1.weight - torch.Size([128]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer2.3.bn1.bias - torch.Size([128]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer2.3.conv2.weight - torch.Size([128, 128, 3, 3]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer2.3.bn2.weight - torch.Size([128]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer2.3.bn2.bias - torch.Size([128]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer2.3.conv3.weight - torch.Size([512, 128, 1, 1]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer2.3.bn3.weight - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer2.3.bn3.bias - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.0.conv1.weight - torch.Size([256, 512, 1, 1]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.0.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.0.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.0.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.0.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.0.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.0.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.0.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.0.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.0.downsample.0.weight - torch.Size([1024, 512, 1, 1]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.0.downsample.1.weight - torch.Size([1024]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.0.downsample.1.bias - torch.Size([1024]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.1.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.1.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.1.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.1.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.1.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.1.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.1.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.1.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.1.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.2.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.2.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.2.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.2.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.2.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.2.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.2.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.2.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.2.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.3.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.3.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.3.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.3.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.3.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.3.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.3.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.3.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.3.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.4.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.4.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.4.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.4.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.4.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.4.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.4.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.4.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.4.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.5.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.5.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.5.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.5.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.5.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.5.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.5.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.5.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer3.5.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer4.0.conv1.weight - torch.Size([512, 1024, 1, 1]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer4.0.bn1.weight - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer4.0.bn1.bias - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer4.0.conv2.weight - torch.Size([512, 512, 3, 3]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer4.0.bn2.weight - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer4.0.bn2.bias - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer4.0.conv3.weight - torch.Size([2048, 512, 1, 1]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer4.0.bn3.weight - torch.Size([2048]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer4.0.bn3.bias - torch.Size([2048]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer4.0.downsample.0.weight - torch.Size([2048, 1024, 1, 1]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer4.0.downsample.1.weight - torch.Size([2048]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer4.0.downsample.1.bias - torch.Size([2048]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer4.1.conv1.weight - torch.Size([512, 2048, 1, 1]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer4.1.bn1.weight - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer4.1.bn1.bias - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer4.1.conv2.weight - torch.Size([512, 512, 3, 3]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer4.1.bn2.weight - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer4.1.bn2.bias - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer4.1.conv3.weight - torch.Size([2048, 512, 1, 1]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer4.1.bn3.weight - torch.Size([2048]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer4.1.bn3.bias - torch.Size([2048]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer4.2.conv1.weight - torch.Size([512, 2048, 1, 1]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer4.2.bn1.weight - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer4.2.bn1.bias - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer4.2.conv2.weight - torch.Size([512, 512, 3, 3]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer4.2.bn2.weight - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer4.2.bn2.bias - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer4.2.conv3.weight - torch.Size([2048, 512, 1, 1]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer4.2.bn3.weight - torch.Size([2048]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+backbone.layer4.2.bn3.bias - torch.Size([2048]): 
+PretrainedInit: load from open-mmlab://detectron2/resnet50_caffe 
+
+neck.lateral_convs.1.conv.weight - torch.Size([256, 512, 1, 1]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.lateral_convs.1.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.lateral_convs.1.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.lateral_convs.1.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.lateral_convs.2.conv.weight - torch.Size([256, 1024, 1, 1]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.lateral_convs.2.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.lateral_convs.2.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.lateral_convs.2.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.lateral_convs.3.conv.weight - torch.Size([256, 2048, 1, 1]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.lateral_convs.3.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.lateral_convs.3.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.lateral_convs.3.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.extra_convs.0.0.conv.weight - torch.Size([256, 2048, 1, 1]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.extra_convs.0.0.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.extra_convs.0.0.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.0.weight_two_nodes - torch.Size([2, 6]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.0.weight_three_nodes - torch.Size([3, 4]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.0.bifpn_convs.0.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.bifpn_convs.0.bifpn_convs.0.0.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.0.bifpn_convs.0.0.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.0.bifpn_convs.1.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.bifpn_convs.0.bifpn_convs.1.0.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.0.bifpn_convs.1.0.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.0.bifpn_convs.2.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.bifpn_convs.0.bifpn_convs.2.0.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.0.bifpn_convs.2.0.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.0.bifpn_convs.3.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.bifpn_convs.0.bifpn_convs.3.0.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.0.bifpn_convs.3.0.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.0.bifpn_convs.4.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.bifpn_convs.0.bifpn_convs.4.0.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.0.bifpn_convs.4.0.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.0.bifpn_convs.5.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.bifpn_convs.0.bifpn_convs.5.0.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.0.bifpn_convs.5.0.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.0.bifpn_convs.6.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.bifpn_convs.0.bifpn_convs.6.0.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.0.bifpn_convs.6.0.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.0.bifpn_convs.7.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.bifpn_convs.0.bifpn_convs.7.0.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.0.bifpn_convs.7.0.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.0.bifpn_convs.8.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.bifpn_convs.0.bifpn_convs.8.0.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.0.bifpn_convs.8.0.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.0.bifpn_convs.9.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.bifpn_convs.0.bifpn_convs.9.0.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.0.bifpn_convs.9.0.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.1.weight_two_nodes - torch.Size([2, 6]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.1.weight_three_nodes - torch.Size([3, 4]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.1.bifpn_convs.0.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.bifpn_convs.1.bifpn_convs.0.0.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.1.bifpn_convs.0.0.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.1.bifpn_convs.1.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.bifpn_convs.1.bifpn_convs.1.0.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.1.bifpn_convs.1.0.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.1.bifpn_convs.2.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.bifpn_convs.1.bifpn_convs.2.0.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.1.bifpn_convs.2.0.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.1.bifpn_convs.3.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.bifpn_convs.1.bifpn_convs.3.0.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.1.bifpn_convs.3.0.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.1.bifpn_convs.4.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.bifpn_convs.1.bifpn_convs.4.0.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.1.bifpn_convs.4.0.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.1.bifpn_convs.5.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.bifpn_convs.1.bifpn_convs.5.0.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.1.bifpn_convs.5.0.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.1.bifpn_convs.6.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.bifpn_convs.1.bifpn_convs.6.0.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.1.bifpn_convs.6.0.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.1.bifpn_convs.7.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.bifpn_convs.1.bifpn_convs.7.0.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.1.bifpn_convs.7.0.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.1.bifpn_convs.8.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.bifpn_convs.1.bifpn_convs.8.0.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.1.bifpn_convs.8.0.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.1.bifpn_convs.9.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.bifpn_convs.1.bifpn_convs.9.0.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+neck.bifpn_convs.1.bifpn_convs.9.0.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+det_head.cls_convs.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+det_head.cls_convs.0.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+det_head.cls_convs.0.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+det_head.cls_convs.0.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+det_head.cls_convs.1.conv.weight - torch.Size([256, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+det_head.cls_convs.1.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+det_head.cls_convs.1.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+det_head.cls_convs.1.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+det_head.cls_convs.2.conv.weight - torch.Size([256, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+det_head.cls_convs.2.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+det_head.cls_convs.2.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+det_head.cls_convs.2.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+det_head.cls_convs.3.conv.weight - torch.Size([256, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+det_head.cls_convs.3.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+det_head.cls_convs.3.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+det_head.cls_convs.3.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+det_head.reg_convs.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+det_head.reg_convs.0.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+det_head.reg_convs.0.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+det_head.reg_convs.0.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+det_head.reg_convs.1.conv.weight - torch.Size([256, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+det_head.reg_convs.1.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+det_head.reg_convs.1.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+det_head.reg_convs.1.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+det_head.reg_convs.2.conv.weight - torch.Size([256, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+det_head.reg_convs.2.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+det_head.reg_convs.2.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+det_head.reg_convs.2.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+det_head.reg_convs.3.conv.weight - torch.Size([256, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+det_head.reg_convs.3.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+det_head.reg_convs.3.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+det_head.reg_convs.3.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+det_head.conv_cls.weight - torch.Size([1, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=-4.59511985013459 
+
+det_head.conv_cls.bias - torch.Size([1]): 
+NormalInit: mean=0, std=0.01, bias=-4.59511985013459 
+
+det_head.conv_reg.weight - torch.Size([4, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+det_head.conv_reg.bias - torch.Size([4]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+det_head.conv_bezier.weight - torch.Size([16, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+det_head.conv_bezier.bias - torch.Size([16]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+det_head.conv_centerness.weight - torch.Size([1, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+det_head.conv_centerness.bias - torch.Size([1]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+det_head.scales.0.scale - torch.Size([]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+det_head.scales.1.scale - torch.Size([]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+det_head.scales.2.scale - torch.Size([]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+det_head.scales.3.scale - torch.Size([]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+det_head.scales.4.scale - torch.Size([]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+roi_head.neck.mask_convs.0.conv.weight - torch.Size([256, 258, 3, 3]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+roi_head.neck.mask_convs.0.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+roi_head.neck.mask_convs.0.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+roi_head.neck.mask_convs.1.conv.weight - torch.Size([256, 256, 3, 3]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+roi_head.neck.mask_convs.1.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+roi_head.neck.mask_convs.1.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+roi_head.neck.mask_convs.2.conv.weight - torch.Size([256, 256, 3, 3]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+roi_head.neck.mask_convs.2.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+roi_head.neck.mask_convs.2.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+roi_head.neck.mask_convs.3.conv.weight - torch.Size([256, 256, 3, 3]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+roi_head.neck.mask_convs.3.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+roi_head.neck.mask_convs.3.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+roi_head.rec_head.backbone.convs.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+roi_head.rec_head.backbone.convs.0.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+roi_head.rec_head.backbone.convs.0.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+roi_head.rec_head.backbone.convs.1.conv.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+roi_head.rec_head.backbone.convs.1.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+roi_head.rec_head.backbone.convs.1.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+roi_head.rec_head.backbone.convs.2.conv.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+roi_head.rec_head.backbone.convs.2.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+roi_head.rec_head.backbone.convs.2.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+roi_head.rec_head.backbone.convs.3.conv.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+roi_head.rec_head.backbone.convs.3.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+roi_head.rec_head.backbone.convs.3.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+roi_head.rec_head.encoder.layer.rnn.weight_ih_l0 - torch.Size([1024, 256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+roi_head.rec_head.encoder.layer.rnn.weight_hh_l0 - torch.Size([1024, 256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+roi_head.rec_head.encoder.layer.rnn.bias_ih_l0 - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+roi_head.rec_head.encoder.layer.rnn.bias_hh_l0 - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+roi_head.rec_head.encoder.layer.rnn.weight_ih_l0_reverse - torch.Size([1024, 256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+roi_head.rec_head.encoder.layer.rnn.weight_hh_l0_reverse - torch.Size([1024, 256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+roi_head.rec_head.encoder.layer.rnn.bias_ih_l0_reverse - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+roi_head.rec_head.encoder.layer.rnn.bias_hh_l0_reverse - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+roi_head.rec_head.encoder.layer.embedding.weight - torch.Size([256, 512]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+roi_head.rec_head.encoder.layer.embedding.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+roi_head.rec_head.decoder.embedding.weight - torch.Size([97, 256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+roi_head.rec_head.decoder.attn_combine.weight - torch.Size([256, 512]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+roi_head.rec_head.decoder.attn_combine.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+roi_head.rec_head.decoder.gru.weight_ih_l0 - torch.Size([768, 256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+roi_head.rec_head.decoder.gru.weight_hh_l0 - torch.Size([768, 256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+roi_head.rec_head.decoder.gru.bias_ih_l0 - torch.Size([768]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+roi_head.rec_head.decoder.gru.bias_hh_l0 - torch.Size([768]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+roi_head.rec_head.decoder.out.weight - torch.Size([97, 256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+roi_head.rec_head.decoder.out.bias - torch.Size([97]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+roi_head.rec_head.decoder.vat.weight - torch.Size([1, 256]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+
+roi_head.rec_head.decoder.vat.bias - torch.Size([1]): 
+The value is the same before and after calling `init_weights` of ABCNet  
+2023/01/31 21:43:50 - mmengine - INFO - Load checkpoint from /home/user/lz/ABCNet/mmocr/projects/ABCNet/model/abcnet-v2_resnet50_bifpn_500e_icdar2015-5e4cc7ed.pth
+2023/01/31 21:43:58 - mmengine - INFO - Epoch(val)   [0][  5/500]    eta: 0:12:38  time: 1.5324  data_time: 0.0615  memory: 34605  
+2023/01/31 21:44:00 - mmengine - INFO - Epoch(val)   [0][ 10/500]    eta: 0:07:52  time: 0.9652  data_time: 0.0323  memory: 10261  
+2023/01/31 21:44:02 - mmengine - INFO - Epoch(val)   [0][ 15/500]    eta: 0:06:09  time: 0.3758  data_time: 0.0034  memory: 10089  
+2023/01/31 21:44:03 - mmengine - INFO - Epoch(val)   [0][ 20/500]    eta: 0:05:18  time: 0.3613  data_time: 0.0037  memory: 10399  
+2023/01/31 21:44:05 - mmengine - INFO - Epoch(val)   [0][ 25/500]    eta: 0:04:48  time: 0.3788  data_time: 0.0037  memory: 10297  
+2023/01/31 21:44:07 - mmengine - INFO - Epoch(val)   [0][ 30/500]    eta: 0:04:25  time: 0.3687  data_time: 0.0037  memory: 3778  
+2023/01/31 21:44:09 - mmengine - INFO - Epoch(val)   [0][ 35/500]    eta: 0:04:08  time: 0.3489  data_time: 0.0037  memory: 3778  
+2023/01/31 21:44:11 - mmengine - INFO - Epoch(val)   [0][ 40/500]    eta: 0:03:54  time: 0.3444  data_time: 0.0037  memory: 3778  
+2023/01/31 21:44:12 - mmengine - INFO - Epoch(val)   [0][ 45/500]    eta: 0:03:43  time: 0.3446  data_time: 0.0037  memory: 3778  
+2023/01/31 21:44:14 - mmengine - INFO - Epoch(val)   [0][ 50/500]    eta: 0:03:34  time: 0.3448  data_time: 0.0037  memory: 3778  
+2023/01/31 21:44:16 - mmengine - INFO - Epoch(val)   [0][ 55/500]    eta: 0:03:26  time: 0.3378  data_time: 0.0037  memory: 3778  
+2023/01/31 21:44:18 - mmengine - INFO - Epoch(val)   [0][ 60/500]    eta: 0:03:21  time: 0.3595  data_time: 0.0037  memory: 10607  
+2023/01/31 21:44:19 - mmengine - INFO - Epoch(val)   [0][ 65/500]    eta: 0:03:15  time: 0.3629  data_time: 0.0037  memory: 3778  
+2023/01/31 21:44:21 - mmengine - INFO - Epoch(val)   [0][ 70/500]    eta: 0:03:09  time: 0.3437  data_time: 0.0037  memory: 3778  
+2023/01/31 21:44:23 - mmengine - INFO - Epoch(val)   [0][ 75/500]    eta: 0:03:05  time: 0.3569  data_time: 0.0037  memory: 10331  
+2023/01/31 21:44:25 - mmengine - INFO - Epoch(val)   [0][ 80/500]    eta: 0:03:01  time: 0.3765  data_time: 0.0037  memory: 10641  
+2023/01/31 21:44:27 - mmengine - INFO - Epoch(val)   [0][ 85/500]    eta: 0:02:57  time: 0.3582  data_time: 0.0038  memory: 3778  
+2023/01/31 21:44:28 - mmengine - INFO - Epoch(val)   [0][ 90/500]    eta: 0:02:53  time: 0.3395  data_time: 0.0037  memory: 3778  
+2023/01/31 21:44:30 - mmengine - INFO - Epoch(val)   [0][ 95/500]    eta: 0:02:50  time: 0.3757  data_time: 0.0037  memory: 10711  
+2023/01/31 21:44:32 - mmengine - INFO - Epoch(val)   [0][100/500]    eta: 0:02:47  time: 0.3746  data_time: 0.0037  memory: 3778  
+2023/01/31 21:44:34 - mmengine - INFO - Epoch(val)   [0][105/500]    eta: 0:02:44  time: 0.3575  data_time: 0.0037  memory: 10365  
+2023/01/31 21:44:36 - mmengine - INFO - Epoch(val)   [0][110/500]    eta: 0:02:40  time: 0.3574  data_time: 0.0037  memory: 3778  
+2023/01/31 21:44:37 - mmengine - INFO - Epoch(val)   [0][115/500]    eta: 0:02:37  time: 0.3399  data_time: 0.0038  memory: 3778  
+2023/01/31 21:44:39 - mmengine - INFO - Epoch(val)   [0][120/500]    eta: 0:02:34  time: 0.3409  data_time: 0.0037  memory: 3778  
+2023/01/31 21:44:41 - mmengine - INFO - Epoch(val)   [0][125/500]    eta: 0:02:31  time: 0.3418  data_time: 0.0038  memory: 3778  
+2023/01/31 21:44:42 - mmengine - INFO - Epoch(val)   [0][130/500]    eta: 0:02:28  time: 0.3498  data_time: 0.0038  memory: 3778  
+2023/01/31 21:44:44 - mmengine - INFO - Epoch(val)   [0][135/500]    eta: 0:02:26  time: 0.3563  data_time: 0.0038  memory: 3778  
+2023/01/31 21:44:46 - mmengine - INFO - Epoch(val)   [0][140/500]    eta: 0:02:23  time: 0.3428  data_time: 0.0038  memory: 3778  
+2023/01/31 21:44:48 - mmengine - INFO - Epoch(val)   [0][145/500]    eta: 0:02:21  time: 0.3735  data_time: 0.0038  memory: 10537  
+2023/01/31 21:44:50 - mmengine - INFO - Epoch(val)   [0][150/500]    eta: 0:02:18  time: 0.3787  data_time: 0.0038  memory: 3778  
+2023/01/31 21:44:52 - mmengine - INFO - Epoch(val)   [0][155/500]    eta: 0:02:16  time: 0.3642  data_time: 0.0038  memory: 10435  
+2023/01/31 21:44:53 - mmengine - INFO - Epoch(val)   [0][160/500]    eta: 0:02:14  time: 0.3631  data_time: 0.0038  memory: 3778  
+2023/01/31 21:44:55 - mmengine - INFO - Epoch(val)   [0][165/500]    eta: 0:02:11  time: 0.3420  data_time: 0.0038  memory: 3778  
+2023/01/31 21:44:57 - mmengine - INFO - Epoch(val)   [0][170/500]    eta: 0:02:09  time: 0.3393  data_time: 0.0038  memory: 3778  
+2023/01/31 21:44:58 - mmengine - INFO - Epoch(val)   [0][175/500]    eta: 0:02:06  time: 0.3416  data_time: 0.0038  memory: 3778  
+2023/01/31 21:45:00 - mmengine - INFO - Epoch(val)   [0][180/500]    eta: 0:02:04  time: 0.3430  data_time: 0.0038  memory: 3778  
+2023/01/31 21:45:02 - mmengine - INFO - Epoch(val)   [0][185/500]    eta: 0:02:02  time: 0.3515  data_time: 0.0038  memory: 3778  
+2023/01/31 21:45:04 - mmengine - INFO - Epoch(val)   [0][190/500]    eta: 0:02:00  time: 0.3935  data_time: 0.0038  memory: 11365  
+2023/01/31 21:45:06 - mmengine - INFO - Epoch(val)   [0][195/500]    eta: 0:01:58  time: 0.3821  data_time: 0.0039  memory: 3778  
+2023/01/31 21:45:08 - mmengine - INFO - Epoch(val)   [0][200/500]    eta: 0:01:56  time: 0.3754  data_time: 0.0039  memory: 10469  
+2023/01/31 21:45:10 - mmengine - INFO - Epoch(val)   [0][205/500]    eta: 0:01:54  time: 0.3794  data_time: 0.0038  memory: 3778  
+2023/01/31 21:45:11 - mmengine - INFO - Epoch(val)   [0][210/500]    eta: 0:01:51  time: 0.3434  data_time: 0.0038  memory: 3778  
+2023/01/31 21:45:13 - mmengine - INFO - Epoch(val)   [0][215/500]    eta: 0:01:49  time: 0.3557  data_time: 0.0038  memory: 3778  
+2023/01/31 21:45:15 - mmengine - INFO - Epoch(val)   [0][220/500]    eta: 0:01:47  time: 0.3553  data_time: 0.0038  memory: 3778  
+2023/01/31 21:45:16 - mmengine - INFO - Epoch(val)   [0][225/500]    eta: 0:01:45  time: 0.3373  data_time: 0.0038  memory: 3778  
+2023/01/31 21:45:18 - mmengine - INFO - Epoch(val)   [0][230/500]    eta: 0:01:43  time: 0.3388  data_time: 0.0038  memory: 3778  
+2023/01/31 21:45:20 - mmengine - INFO - Epoch(val)   [0][235/500]    eta: 0:01:41  time: 0.3407  data_time: 0.0038  memory: 3778  
+2023/01/31 21:45:22 - mmengine - INFO - Epoch(val)   [0][240/500]    eta: 0:01:39  time: 0.3499  data_time: 0.0038  memory: 3778  
+2023/01/31 21:45:24 - mmengine - INFO - Epoch(val)   [0][245/500]    eta: 0:01:37  time: 0.3614  data_time: 0.0038  memory: 3778  
+2023/01/31 21:45:25 - mmengine - INFO - Epoch(val)   [0][250/500]    eta: 0:01:35  time: 0.3518  data_time: 0.0038  memory: 3778  
+2023/01/31 21:45:27 - mmengine - INFO - Epoch(val)   [0][255/500]    eta: 0:01:32  time: 0.3432  data_time: 0.0038  memory: 3778  
+2023/01/31 21:45:29 - mmengine - INFO - Epoch(val)   [0][260/500]    eta: 0:01:30  time: 0.3441  data_time: 0.0038  memory: 3778  
+2023/01/31 21:45:30 - mmengine - INFO - Epoch(val)   [0][265/500]    eta: 0:01:28  time: 0.3459  data_time: 0.0038  memory: 3778  
+2023/01/31 21:45:32 - mmengine - INFO - Epoch(val)   [0][270/500]    eta: 0:01:26  time: 0.3472  data_time: 0.0038  memory: 3778  
+2023/01/31 21:45:34 - mmengine - INFO - Epoch(val)   [0][275/500]    eta: 0:01:24  time: 0.3418  data_time: 0.0038  memory: 3778  
+2023/01/31 21:45:36 - mmengine - INFO - Epoch(val)   [0][280/500]    eta: 0:01:22  time: 0.3443  data_time: 0.0038  memory: 3778  
+2023/01/31 21:45:37 - mmengine - INFO - Epoch(val)   [0][285/500]    eta: 0:01:20  time: 0.3467  data_time: 0.0039  memory: 3778  
+2023/01/31 21:45:39 - mmengine - INFO - Epoch(val)   [0][290/500]    eta: 0:01:18  time: 0.3445  data_time: 0.0038  memory: 3778  
+2023/01/31 21:45:41 - mmengine - INFO - Epoch(val)   [0][295/500]    eta: 0:01:16  time: 0.3428  data_time: 0.0038  memory: 3778  
+2023/01/31 21:45:42 - mmengine - INFO - Epoch(val)   [0][300/500]    eta: 0:01:14  time: 0.3446  data_time: 0.0038  memory: 3778  
+2023/01/31 21:45:44 - mmengine - INFO - Epoch(val)   [0][305/500]    eta: 0:01:12  time: 0.3488  data_time: 0.0038  memory: 3778  
+2023/01/31 21:45:46 - mmengine - INFO - Epoch(val)   [0][310/500]    eta: 0:01:10  time: 0.3466  data_time: 0.0038  memory: 3778  
+2023/01/31 21:45:48 - mmengine - INFO - Epoch(val)   [0][315/500]    eta: 0:01:09  time: 0.3989  data_time: 0.0038  memory: 11021  
+2023/01/31 21:45:50 - mmengine - INFO - Epoch(val)   [0][320/500]    eta: 0:01:07  time: 0.4101  data_time: 0.0038  memory: 3778  
+2023/01/31 21:45:52 - mmengine - INFO - Epoch(val)   [0][325/500]    eta: 0:01:05  time: 0.3531  data_time: 0.0038  memory: 3778  
+2023/01/31 21:45:53 - mmengine - INFO - Epoch(val)   [0][330/500]    eta: 0:01:03  time: 0.3441  data_time: 0.0038  memory: 3778  
+2023/01/31 21:45:55 - mmengine - INFO - Epoch(val)   [0][335/500]    eta: 0:01:01  time: 0.3503  data_time: 0.0038  memory: 3778  
+2023/01/31 21:45:57 - mmengine - INFO - Epoch(val)   [0][340/500]    eta: 0:00:59  time: 0.3472  data_time: 0.0038  memory: 3778  
+2023/01/31 21:45:59 - mmengine - INFO - Epoch(val)   [0][345/500]    eta: 0:00:57  time: 0.3453  data_time: 0.0039  memory: 3778  
+2023/01/31 21:46:00 - mmengine - INFO - Epoch(val)   [0][350/500]    eta: 0:00:55  time: 0.3476  data_time: 0.0039  memory: 3778  
+2023/01/31 21:46:02 - mmengine - INFO - Epoch(val)   [0][355/500]    eta: 0:00:53  time: 0.3511  data_time: 0.0038  memory: 3778  
+2023/01/31 21:46:04 - mmengine - INFO - Epoch(val)   [0][360/500]    eta: 0:00:51  time: 0.3492  data_time: 0.0038  memory: 3778  
+2023/01/31 21:46:06 - mmengine - INFO - Epoch(val)   [0][365/500]    eta: 0:00:50  time: 0.3606  data_time: 0.0038  memory: 3778  
+2023/01/31 21:46:08 - mmengine - INFO - Epoch(val)   [0][370/500]    eta: 0:00:48  time: 0.3617  data_time: 0.0038  memory: 3778  
+2023/01/31 21:46:09 - mmengine - INFO - Epoch(val)   [0][375/500]    eta: 0:00:46  time: 0.3454  data_time: 0.0038  memory: 3778  
+2023/01/31 21:46:11 - mmengine - INFO - Epoch(val)   [0][380/500]    eta: 0:00:44  time: 0.3414  data_time: 0.0038  memory: 3778  
+2023/01/31 21:46:13 - mmengine - INFO - Epoch(val)   [0][385/500]    eta: 0:00:42  time: 0.3461  data_time: 0.0038  memory: 3778  
+2023/01/31 21:46:14 - mmengine - INFO - Epoch(val)   [0][390/500]    eta: 0:00:40  time: 0.3474  data_time: 0.0038  memory: 3778  
+2023/01/31 21:46:16 - mmengine - INFO - Epoch(val)   [0][395/500]    eta: 0:00:38  time: 0.3425  data_time: 0.0038  memory: 3778  
+2023/01/31 21:46:18 - mmengine - INFO - Epoch(val)   [0][400/500]    eta: 0:00:36  time: 0.3413  data_time: 0.0038  memory: 3778  
+2023/01/31 21:46:20 - mmengine - INFO - Epoch(val)   [0][405/500]    eta: 0:00:35  time: 0.3459  data_time: 0.0038  memory: 3778  
+2023/01/31 21:46:21 - mmengine - INFO - Epoch(val)   [0][410/500]    eta: 0:00:33  time: 0.3461  data_time: 0.0038  memory: 3778  
+2023/01/31 21:46:23 - mmengine - INFO - Epoch(val)   [0][415/500]    eta: 0:00:31  time: 0.3440  data_time: 0.0038  memory: 3778  
+2023/01/31 21:46:25 - mmengine - INFO - Epoch(val)   [0][420/500]    eta: 0:00:29  time: 0.3454  data_time: 0.0038  memory: 3778  
+2023/01/31 21:46:27 - mmengine - INFO - Epoch(val)   [0][425/500]    eta: 0:00:27  time: 0.3459  data_time: 0.0038  memory: 3778  
+2023/01/31 21:46:28 - mmengine - INFO - Epoch(val)   [0][430/500]    eta: 0:00:25  time: 0.3546  data_time: 0.0038  memory: 3778  
+2023/01/31 21:46:30 - mmengine - INFO - Epoch(val)   [0][435/500]    eta: 0:00:23  time: 0.3533  data_time: 0.0038  memory: 3778  
+2023/01/31 21:46:32 - mmengine - INFO - Epoch(val)   [0][440/500]    eta: 0:00:22  time: 0.3523  data_time: 0.0038  memory: 3778  
+2023/01/31 21:46:34 - mmengine - INFO - Epoch(val)   [0][445/500]    eta: 0:00:20  time: 0.3504  data_time: 0.0038  memory: 3778  
+2023/01/31 21:46:35 - mmengine - INFO - Epoch(val)   [0][450/500]    eta: 0:00:18  time: 0.3502  data_time: 0.0039  memory: 3778  
+2023/01/31 21:46:37 - mmengine - INFO - Epoch(val)   [0][455/500]    eta: 0:00:16  time: 0.3538  data_time: 0.0039  memory: 3778  
+2023/01/31 21:46:39 - mmengine - INFO - Epoch(val)   [0][460/500]    eta: 0:00:14  time: 0.3495  data_time: 0.0039  memory: 3778  
+2023/01/31 21:46:41 - mmengine - INFO - Epoch(val)   [0][465/500]    eta: 0:00:12  time: 0.3610  data_time: 0.0039  memory: 3778  
+2023/01/31 21:46:43 - mmengine - INFO - Epoch(val)   [0][470/500]    eta: 0:00:10  time: 0.3725  data_time: 0.0040  memory: 3778  
+2023/01/31 21:46:44 - mmengine - INFO - Epoch(val)   [0][475/500]    eta: 0:00:09  time: 0.3649  data_time: 0.0039  memory: 3778  
+2023/01/31 21:46:46 - mmengine - INFO - Epoch(val)   [0][480/500]    eta: 0:00:07  time: 0.3674  data_time: 0.0039  memory: 3778  
+2023/01/31 21:46:48 - mmengine - INFO - Epoch(val)   [0][485/500]    eta: 0:00:05  time: 0.3612  data_time: 0.0039  memory: 3778  
+2023/01/31 21:46:50 - mmengine - INFO - Epoch(val)   [0][490/500]    eta: 0:00:03  time: 0.3435  data_time: 0.0038  memory: 3778  
+2023/01/31 21:46:51 - mmengine - INFO - Epoch(val)   [0][495/500]    eta: 0:00:01  time: 0.3463  data_time: 0.0038  memory: 3778  
+2023/01/31 21:46:53 - mmengine - INFO - Epoch(val)   [0][500/500]    eta: 0:00:00  time: 0.3461  data_time: 0.0036  memory: 3778  
+2023/01/31 21:46:53 - mmengine - INFO - Evaluating hmean-iou...
+2023/01/31 21:46:53 - mmengine - INFO - prediction score threshold: 0.30, recall: 0.6423, precision: 0.6355, hmean: 0.6389
+
+2023/01/31 21:46:53 - mmengine - INFO - prediction score threshold: 0.40, recall: 0.6418, precision: 0.6378, hmean: 0.6398
+
+2023/01/31 21:46:53 - mmengine - INFO - prediction score threshold: 0.50, recall: 0.6389, precision: 0.6609, hmean: 0.6497
+
+2023/01/31 21:46:53 - mmengine - INFO - prediction score threshold: 0.60, recall: 0.6047, precision: 0.7332, hmean: 0.6628
+
+2023/01/31 21:46:53 - mmengine - INFO - prediction score threshold: 0.70, recall: 0.4815, precision: 0.8170, hmean: 0.6059
+
+2023/01/31 21:46:53 - mmengine - INFO - prediction score threshold: 0.80, recall: 0.1984, precision: 0.8879, hmean: 0.3243
+
+2023/01/31 21:46:53 - mmengine - INFO - prediction score threshold: 0.90, recall: 0.0014, precision: 1.0000, hmean: 0.0029
+
+2023/01/31 21:46:53 - mmengine - INFO - Evaluating hmean-iou...
+2023/01/31 21:46:53 - mmengine - INFO - prediction score threshold: 0.30, recall: 0.8883, precision: 0.8790, hmean: 0.8836
+
+2023/01/31 21:46:53 - mmengine - INFO - prediction score threshold: 0.40, recall: 0.8873, precision: 0.8818, hmean: 0.8846
+
+2023/01/31 21:46:53 - mmengine - INFO - prediction score threshold: 0.50, recall: 0.8739, precision: 0.9039, hmean: 0.8886
+
+2023/01/31 21:46:53 - mmengine - INFO - prediction score threshold: 0.60, recall: 0.7930, precision: 0.9615, hmean: 0.8691
+
+2023/01/31 21:46:53 - mmengine - INFO - prediction score threshold: 0.70, recall: 0.5826, precision: 0.9886, hmean: 0.7331
+
+2023/01/31 21:46:53 - mmengine - INFO - prediction score threshold: 0.80, recall: 0.2224, precision: 0.9957, hmean: 0.3636
+
+2023/01/31 21:46:53 - mmengine - INFO - prediction score threshold: 0.90, recall: 0.0014, precision: 1.0000, hmean: 0.0029
+
+2023/01/31 21:46:53 - mmengine - INFO - Epoch(val) [0][500/500]  e2e_icdar/precision: 0.7332  e2e_icdar/recall: 0.6047  e2e_icdar/hmean: 0.6628  icdar/precision: 0.9039  icdar/recall: 0.8739  icdar/hmean: 0.8886
+2023/01/31 21:46:55 - mmengine - INFO - Epoch(val)   [0][  5/500]    eta: 0:03:01  time: 0.3533  data_time: 0.0166  memory: 3778  
+2023/01/31 21:46:57 - mmengine - INFO - Epoch(val)   [0][ 10/500]    eta: 0:02:55  time: 0.3575  data_time: 0.0166  memory: 3778  
+2023/01/31 21:46:58 - mmengine - INFO - Epoch(val)   [0][ 15/500]    eta: 0:02:50  time: 0.3427  data_time: 0.0037  memory: 3778  
+2023/01/31 21:47:00 - mmengine - INFO - Epoch(val)   [0][ 20/500]    eta: 0:02:48  time: 0.3460  data_time: 0.0038  memory: 3778  
+2023/01/31 21:47:02 - mmengine - INFO - Epoch(val)   [0][ 25/500]    eta: 0:02:46  time: 0.3521  data_time: 0.0038  memory: 3778  
+2023/01/31 21:47:04 - mmengine - INFO - Epoch(val)   [0][ 30/500]    eta: 0:02:45  time: 0.3514  data_time: 0.0038  memory: 3778  
+2023/01/31 21:47:06 - mmengine - INFO - Epoch(val)   [0][ 35/500]    eta: 0:02:43  time: 0.3537  data_time: 0.0037  memory: 3778  
+2023/01/31 21:47:07 - mmengine - INFO - Epoch(val)   [0][ 40/500]    eta: 0:02:41  time: 0.3494  data_time: 0.0038  memory: 3778  
+2023/01/31 21:47:09 - mmengine - INFO - Epoch(val)   [0][ 45/500]    eta: 0:02:40  time: 0.3516  data_time: 0.0040  memory: 3778  
+2023/01/31 21:47:11 - mmengine - INFO - Epoch(val)   [0][ 50/500]    eta: 0:02:38  time: 0.3520  data_time: 0.0040  memory: 3778  
+2023/01/31 21:47:13 - mmengine - INFO - Epoch(val)   [0][ 55/500]    eta: 0:02:35  time: 0.3433  data_time: 0.0038  memory: 3778  
+2023/01/31 21:47:14 - mmengine - INFO - Epoch(val)   [0][ 60/500]    eta: 0:02:34  time: 0.3528  data_time: 0.0038  memory: 3778  
+2023/01/31 21:47:16 - mmengine - INFO - Epoch(val)   [0][ 65/500]    eta: 0:02:32  time: 0.3565  data_time: 0.0038  memory: 3778  
+2023/01/31 21:47:18 - mmengine - INFO - Epoch(val)   [0][ 70/500]    eta: 0:02:31  time: 0.3493  data_time: 0.0038  memory: 3778  
+2023/01/31 21:47:20 - mmengine - INFO - Epoch(val)   [0][ 75/500]    eta: 0:02:29  time: 0.3504  data_time: 0.0038  memory: 3778  
+2023/01/31 21:47:21 - mmengine - INFO - Epoch(val)   [0][ 80/500]    eta: 0:02:27  time: 0.3575  data_time: 0.0038  memory: 3778  
+2023/01/31 21:47:23 - mmengine - INFO - Epoch(val)   [0][ 85/500]    eta: 0:02:25  time: 0.3512  data_time: 0.0038  memory: 3778  
+2023/01/31 21:47:25 - mmengine - INFO - Epoch(val)   [0][ 90/500]    eta: 0:02:23  time: 0.3444  data_time: 0.0038  memory: 3778  
+2023/01/31 21:47:27 - mmengine - INFO - Epoch(val)   [0][ 95/500]    eta: 0:02:22  time: 0.3682  data_time: 0.0039  memory: 3778  
+2023/01/31 21:47:29 - mmengine - INFO - Epoch(val)   [0][100/500]    eta: 0:02:21  time: 0.3676  data_time: 0.0039  memory: 3778  
+2023/01/31 21:47:30 - mmengine - INFO - Epoch(val)   [0][105/500]    eta: 0:02:19  time: 0.3504  data_time: 0.0039  memory: 3778  
+2023/01/31 21:47:32 - mmengine - INFO - Epoch(val)   [0][110/500]    eta: 0:02:17  time: 0.3502  data_time: 0.0039  memory: 3778  
+2023/01/31 21:47:34 - mmengine - INFO - Epoch(val)   [0][115/500]    eta: 0:02:15  time: 0.3443  data_time: 0.0038  memory: 3778  
+2023/01/31 21:47:35 - mmengine - INFO - Epoch(val)   [0][120/500]    eta: 0:02:13  time: 0.3455  data_time: 0.0038  memory: 3778  
+2023/01/31 21:47:37 - mmengine - INFO - Epoch(val)   [0][125/500]    eta: 0:02:11  time: 0.3471  data_time: 0.0038  memory: 3778  
+2023/01/31 21:47:39 - mmengine - INFO - Epoch(val)   [0][130/500]    eta: 0:02:10  time: 0.3542  data_time: 0.0039  memory: 3778  
+2023/01/31 21:47:41 - mmengine - INFO - Epoch(val)   [0][135/500]    eta: 0:02:08  time: 0.3604  data_time: 0.0039  memory: 3778  
+2023/01/31 21:47:42 - mmengine - INFO - Epoch(val)   [0][140/500]    eta: 0:02:06  time: 0.3469  data_time: 0.0039  memory: 3778  
+2023/01/31 21:47:44 - mmengine - INFO - Epoch(val)   [0][145/500]    eta: 0:02:05  time: 0.3569  data_time: 0.0039  memory: 3778  
+2023/01/31 21:47:46 - mmengine - INFO - Epoch(val)   [0][150/500]    eta: 0:02:03  time: 0.3612  data_time: 0.0039  memory: 3778  
+2023/01/31 21:47:48 - mmengine - INFO - Epoch(val)   [0][155/500]    eta: 0:02:01  time: 0.3547  data_time: 0.0039  memory: 3778  
+2023/01/31 21:47:50 - mmengine - INFO - Epoch(val)   [0][160/500]    eta: 0:01:59  time: 0.3540  data_time: 0.0039  memory: 3778  
+2023/01/31 21:47:51 - mmengine - INFO - Epoch(val)   [0][165/500]    eta: 0:01:57  time: 0.3446  data_time: 0.0039  memory: 3778  
+2023/01/31 21:47:53 - mmengine - INFO - Epoch(val)   [0][170/500]    eta: 0:01:56  time: 0.3420  data_time: 0.0039  memory: 3778  

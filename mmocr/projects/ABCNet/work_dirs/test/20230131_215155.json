@@ -1,0 +1,1 @@
+{"e2e_icdar/precision": 0.7332165791009924, "e2e_icdar/recall": 0.6047183437650457, "e2e_icdar/hmean": 0.6627968337730871, "icdar/precision": 0.9038844621513944, "icdar/recall": 0.8738565238324506, "icdar/hmean": 0.8886168910648714}
